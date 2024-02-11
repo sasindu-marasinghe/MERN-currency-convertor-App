@@ -3,16 +3,32 @@ import axios from "axios";
 
 export default function MainPage() {
     // State for the form fields
-    const [currencyNames, setCurrencyNames] = useState([]);
-    const [date, setDate] = useState(null);
-    const [sourceCurrency, setSourceCurrency] = useState("");
-    const [targetCurrency, setTargetCurrency] = useState("");
+    const [currencyNames, setCurrencyNames] = useState({});
+    const [date, setDate] = useState('');
+    const [sourceCurrency, setSourceCurrency] = useState('');
+    const [targetCurrency, setTargetCurrency] = useState('');
     const [amountInSourceCurrency, setAmountInSourceCurrency] = useState(0);
+    const [amountInTargetCurrency, setAmountInTargetCurrency] = useState(0);
 
     // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Your form submission logic here
+        console.log("Form submitted");
+        try {
+            const response = await axios.get("http://localhost:3001/convert", {
+                params: {
+                    date,
+                    sourceCurrency,
+                    targetCurrency,
+                    amountInSourceCurrency,
+                },
+            });
+            console.log("Conversion response:", response.data);
+            setAmountInTargetCurrency(response.data); // Update amountInTargetCurrency instead of amountInSourceCurrency
+        } catch (error) {
+            console.error("Error during conversion:", error);
+            setAmountInTargetCurrency(0); // Reset amountInTargetCurrency in case of error
+        }
     };
 
     // Fetch currency names from API on component mount
@@ -22,8 +38,8 @@ export default function MainPage() {
                 const response = await axios.get("http://localhost:3001/getAllCurrencies");
                 setCurrencyNames(response.data);
                 console.log(response.data);
-            } catch (err) {
-                console.error(err);
+            } catch (error) {
+                console.error("Error fetching currency names:", error);
             }
         };
 
@@ -69,16 +85,9 @@ export default function MainPage() {
                                 required
                             >
                                 <option value="">Select source Currency</option>
-                                { 
-                              
-                                Object.keys(currencyNames).map((currency) => {
-                                    return (
-                                    <option className='p-1' key={currency} value={currency}>
-                                        {currencyNames[currency]}
-                                    </option>
-                                    );
-                                })}
-                           
+                                {Object.entries(currencyNames).map(([currencyCode, currencyName]) => (
+                                    <option key={currencyCode} value={currencyCode}>{currencyName}</option>
+                                ))}
                             </select>
                         </div>
 
@@ -93,15 +102,9 @@ export default function MainPage() {
                                 required
                             >
                                 <option value="">Select target Currency</option>
-                                { 
-                              
-                              Object.keys(currencyNames).map((currency) => {
-                                  return (
-                                  <option className='p-1' key={currency} value={currency}>
-                                      {currencyNames[currency]}
-                                  </option>
-                                  );
-                              })}
+                                {Object.entries(currencyNames).map(([currencyCode, currencyName]) => (
+                                    <option key={currencyCode} value={currencyCode}>{currencyName}</option>
+                                ))}
                             </select>
                         </div>
 
@@ -122,6 +125,12 @@ export default function MainPage() {
                     </form>
                 </section>
             </div>
+            <section className='mt-5 lg:mx-60'>
+                 {amountInSourceCurrency} {currencyNames[sourceCurrency]} is equals to {" "}
+           <span className='text-green-500 font-bold'>{amountInTargetCurrency}</span>  in {currencyNames[targetCurrency]}
+            </section>
+           
+           
         </div>
     );
 }
