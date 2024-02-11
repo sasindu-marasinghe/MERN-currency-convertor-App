@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from "axios";
 
 export default function MainPage() {
     // State for the form fields
+    const [currencyNames, setCurrencyNames] = useState([]);
     const [date, setDate] = useState(null);
     const [sourceCurrency, setSourceCurrency] = useState("");
     const [targetCurrency, setTargetCurrency] = useState("");
@@ -10,13 +12,23 @@ export default function MainPage() {
     // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(
-            date,
-            sourceCurrency,
-            targetCurrency,
-            amountInSourceCurrency
-        );
-    }
+        // Your form submission logic here
+    };
+
+    // Fetch currency names from API on component mount
+    useEffect(() => {
+        const getCurrencyNames = async () => {
+            try {
+                const response = await axios.get("http://localhost:3001/getAllCurrencies");
+                setCurrencyNames(response.data);
+                console.log(response.data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        getCurrencyNames();
+    }, []);
 
     return (
         <div>
@@ -57,6 +69,16 @@ export default function MainPage() {
                                 required
                             >
                                 <option value="">Select source Currency</option>
+                                { 
+                              
+                                Object.keys(currencyNames).map((currency) => {
+                                    return (
+                                    <option className='p-1' key={currency} value={currency}>
+                                        {currencyNames[currency]}
+                                    </option>
+                                    );
+                                })}
+                           
                             </select>
                         </div>
 
@@ -71,6 +93,15 @@ export default function MainPage() {
                                 required
                             >
                                 <option value="">Select target Currency</option>
+                                { 
+                              
+                              Object.keys(currencyNames).map((currency) => {
+                                  return (
+                                  <option className='p-1' key={currency} value={currency}>
+                                      {currencyNames[currency]}
+                                  </option>
+                                  );
+                              })}
                             </select>
                         </div>
 
